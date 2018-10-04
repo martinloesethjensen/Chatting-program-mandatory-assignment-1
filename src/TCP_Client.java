@@ -1,22 +1,26 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 
 public class TCP_Client {
+	static final String CARRIAGE_RETURN_NEW_LINE = "\r\n";
+	static boolean verbose = true;
+
 	public static void main(String[] args) {
 		System.out.println("=========CLIENT=========");
 
 		Scanner inputFromUser = new Scanner(System.in);
 		System.out.print("What is the IP for the server (type 0 for localhost): ");
-		String ipToConnect = args.length >= 1 ? args[0] : inputFromUser.nextLine();
+		//String ipToConnect = args.length >= 1 ? args[0] : inputFromUser.nextLine();
+		String ipToConnect = "0";
 
 		System.out.print("What is the PORT for the server: ");
-		int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : inputFromUser.nextInt();
+		//int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : inputFromUser.nextInt();
+		int portToConnect = 5656;
 
 
 		final int PORT_SERVER = portToConnect;
@@ -31,35 +35,62 @@ public class TCP_Client {
 
 			Socket socket = new Socket(ip, PORT_SERVER);
 
-			InputStream input = socket.getInputStream();
-			OutputStream output = socket.getOutputStream();
+			InputStream inFromServer;
+			OutputStream outToServer;
 
 			Scanner usernameInput = new Scanner(System.in);
 			// Validating username.
 			// Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.
+			String username;
 			while (true) {
 				System.out.print("Please enter a username: ");
-				String username = usernameInput.next();
-				if(validateUsername(username))break;
+				username = usernameInput.next();
+				if (validateUsername(username)) break;
 				System.out.println("Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.\n");
 			}
+			outToServer = socket.getOutputStream();
+			String msgToServer = "JOIN " + username + ", " + IP_SERVER_STR + ":" + PORT_SERVER + CARRIAGE_RETURN_NEW_LINE;
+			outToServer.write(msgToServer.getBytes());
 
-			inputFromUser = new Scanner(System.in);
-			System.out.println("What do you want to send? ");
+			inFromServer = socket.getInputStream();
 
-			//check with how many characters the message contains
-			String msgToSend = inputFromUser.nextLine();
+			byte[] bytes = new byte[1024];
+			inFromServer.read(bytes);
+			String responseFromServer = new String(bytes);
 
-			byte[] dataToSend = msgToSend.getBytes();
-			output.write(dataToSend);
+			System.out.println(responseFromServer);
+			if (responseFromServer.trim().equals("J_OK")) { // trim because the byte array consists of many placeholders
+				System.out.println("OK to continue...");
 
-			byte[] dataIn = new byte[1024];
-			input.read(dataIn);
-			String msgIn = new String(dataIn);
-			msgIn = msgIn.trim();
+				send_IAMV_Command(outToServer);
 
+				while (true) {
+					inputFromUser = new Scanner(System.in);
 
-			System.out.println("IN -->" + msgIn + "<--");
+					System.out.println("What do you want to send? ");
+					String userInput = inputFromUser.nextLine();
+					
+					if (userInput.equals("QUIT")) {
+						String quit_command = "QUIT" + CARRIAGE_RETURN_NEW_LINE;
+						outToServer.write(quit_command.getBytes());
+						System.out.println("Logging of...");
+						verbose = false;
+						break;
+					} else {
+
+						//check with how many characters the message contains
+						String msgToSend = "DATA " + username + ": " + userInput + CARRIAGE_RETURN_NEW_LINE;
+
+						outToServer.write(msgToSend.getBytes());
+					}
+
+					//method to receive at a time interval
+				}
+//			} else if (inFromServer.readLine().equals("LIST")) {
+//
+//			} else { // handle a J_ERR response from server
+
+			}
 
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -68,8 +99,26 @@ public class TCP_Client {
 		}
 	}
 
+	private static void send_IAMV_Command(OutputStream outToServer) {
+		Thread thread = new Thread(() -> {
+			while (true) {
+				if (!verbose) break;
+				try {
+					Thread.sleep(60000);
+					String IAMV = "IAMV";
+					outToServer.write(IAMV.getBytes());
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					System.err.println(e.getMessage());
+				}
+			}
+		});
+		thread.start();
+	}
+
+
 	private static boolean validateUsername(String username) {
-		String pattern = "^[a-z0-9_-]{1,12}$";
-		return username.matches(pattern);
+		return username.matches("^[a-zA-Z0-9_-]{1,12}$");
 	}
 }
