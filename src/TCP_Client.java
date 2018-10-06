@@ -42,12 +42,12 @@ public class TCP_Client {
 			// Validating username.
 			// Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.
 			String username;
-			while (true) {
+			//while (true) {
 				System.out.print("Please enter a username: ");
 				username = usernameInput.next();
-				if (validateUsername(username)) break;
-				System.out.println("Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.\n");
-			}
+				//if (validateUsername(username)) break;
+				//System.out.println("Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.\n");
+			//}
 			outToServer = socket.getOutputStream();
 			String msgToServer = "JOIN " + username + ", " + IP_SERVER_STR + ":" + PORT_SERVER + CARRIAGE_RETURN_NEW_LINE;
 			outToServer.write(msgToServer.getBytes());
@@ -69,7 +69,7 @@ public class TCP_Client {
 
 					System.out.println("What do you want to send? ");
 					String userInput = inputFromUser.nextLine();
-					
+
 					if (userInput.equals("QUIT")) {
 						String quit_command = "QUIT" + CARRIAGE_RETURN_NEW_LINE;
 						outToServer.write(quit_command.getBytes());
@@ -88,7 +88,8 @@ public class TCP_Client {
 				}
 //			} else if (inFromServer.readLine().equals("LIST")) {
 //
-//			} else { // handle a J_ERR response from server
+			} else {
+				main(args);
 
 			}
 
@@ -118,7 +119,5 @@ public class TCP_Client {
 	}
 
 
-	private static boolean validateUsername(String username) {
-		return username.matches("^[a-zA-Z0-9_-]{1,12}$");
-	}
+
 }
