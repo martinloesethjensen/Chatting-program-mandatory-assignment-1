@@ -39,16 +39,15 @@ public class TCP_Client {
 			OutputStream outToServer;
 
 			Scanner usernameInput = new Scanner(System.in);
-			// Validating username.
-			// Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.
+
 			String username;
-			//while (true) {
-				System.out.print("Please enter a username: ");
-				username = usernameInput.next();
-				//if (validateUsername(username)) break;
-				//System.out.println("Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed.\n");
-			//}
+			//Server will validate username
+			System.out.print("Please enter a username: ");
+			username = usernameInput.next();
+
 			outToServer = socket.getOutputStream();
+
+			//Sends first initial message to try joining the server
 			String msgToServer = "JOIN " + username + ", " + IP_SERVER_STR + ":" + PORT_SERVER + CARRIAGE_RETURN_NEW_LINE;
 			outToServer.write(msgToServer.getBytes());
 
@@ -58,36 +57,14 @@ public class TCP_Client {
 			inFromServer.read(bytes);
 			String responseFromServer = new String(bytes);
 
-			System.out.println(responseFromServer);
 			if (responseFromServer.trim().equals("J_OK")) { // trim because the byte array consists of many placeholders
 				System.out.println("OK to continue...");
 
 				send_IAMV_Command(outToServer);
 
-				while (true) {
-					inputFromUser = new Scanner(System.in);
+				receiveFromServerThread(inFromServer);
+				sendToSeverThread(inputFromUser, outToServer, username);
 
-					System.out.println("What do you want to send? ");
-					String userInput = inputFromUser.nextLine();
-
-					if (userInput.equals("QUIT")) {
-						String quit_command = "QUIT" + CARRIAGE_RETURN_NEW_LINE;
-						outToServer.write(quit_command.getBytes());
-						System.out.println("Logging of...");
-						verbose = false;
-						break;
-					} else {
-
-						//check with how many characters the message contains
-						String msgToSend = "DATA " + username + ": " + userInput + CARRIAGE_RETURN_NEW_LINE;
-
-						outToServer.write(msgToSend.getBytes());
-					}
-
-					//method to receive at a time interval
-				}
-//			} else if (inFromServer.readLine().equals("LIST")) {
-//
 			} else {
 				main(args);
 
@@ -98,6 +75,55 @@ public class TCP_Client {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void receiveFromServerThread(InputStream inFromServer) {
+		Thread thread = new Thread(() -> {
+			try {
+				byte[] bytes = new byte[1024];
+
+				inFromServer.read(bytes);
+
+				String responseFromServer = new String(bytes);
+				System.out.println(responseFromServer);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		thread.start();
+	}
+
+	private static void sendToSeverThread(Scanner inputFromUser, OutputStream outToServer, String username) {
+
+		Thread thread = new Thread(() -> {
+			while (true){
+				try {
+//				inputFromUser = new Scanner(System.in);
+
+					System.out.println("What do you want to send? ");
+					String userInput = inputFromUser.nextLine();
+
+					if (userInput.equals("QUIT")) {
+						String quit_command = "QUIT" + CARRIAGE_RETURN_NEW_LINE;
+
+						outToServer.write(quit_command.getBytes());
+
+						System.out.println("Logging of...");
+						verbose = false;
+						break;
+					} else {
+
+						//check with how many characters the message contains
+						String msgToSend = "DATA " + username + ": " + userInput + CARRIAGE_RETURN_NEW_LINE;
+
+						outToServer.write(msgToSend.getBytes());
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		thread.start();
 	}
 
 	private static void send_IAMV_Command(OutputStream outToServer) {
@@ -117,7 +143,6 @@ public class TCP_Client {
 		});
 		thread.start();
 	}
-
 
 
 }

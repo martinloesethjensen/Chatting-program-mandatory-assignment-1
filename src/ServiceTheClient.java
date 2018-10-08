@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -10,7 +9,6 @@ public class ServiceTheClient {
 	private final String CARRIAGE_RETURN_NEW_LINE = "\r\n";
 	private InputStream inFromClient;
 	private OutputStream outToClient;
-	private ArrayList<HashMap<String, Object>> users = new ArrayList<>();
 
 	public ServiceTheClient() {
 	}
@@ -28,14 +26,9 @@ public class ServiceTheClient {
 			outToClient = socket.getOutputStream();
 
 			while (verbose) {
-				byte[] bytes = new byte[1024];
-				inFromClient.read(bytes);
-				String commandFromClient = new String(bytes);
-				System.out.println(commandFromClient);
 
-				StringTokenizer stringTokenizer = new StringTokenizer(commandFromClient);
+				StringTokenizer stringTokenizer = new StringTokenizer(receiveMsgFromClient(inFromClient));
 				String command = stringTokenizer.nextToken();
-				System.out.println(command);
 
 				if (validateCommand(command)) {
 					switch (command) {
@@ -43,10 +36,10 @@ public class ServiceTheClient {
 							handle_JOIN_Command(outToClient, stringTokenizer, socket);
 							break;
 						case "DATA":
-							//handle_DATA_Command(outToClient, stringTokenizer);
+							handle_DATA_Command(stringTokenizer);
 							break;
 						case "IAMV":
-							handle_IAMV_Command(outToClient, stringTokenizer);
+							//handle_IAMV_Command(outToClient, stringTokenizer);
 							break;
 						case "QUIT":
 							handle_QUIT_command(outToClient, inFromClient);
@@ -62,7 +55,7 @@ public class ServiceTheClient {
 
 					String err_Unknown_Command = "J_ERR 500: UNKNOWN COMMAND." + CARRIAGE_RETURN_NEW_LINE;
 					outToClient.write(err_Unknown_Command.getBytes());
-					//socket.close(); //måske skal socket lukkes efter
+
 				}
 
 			}
@@ -71,12 +64,66 @@ public class ServiceTheClient {
 		}
 	}
 
-	private void handle_IAMV_Command(OutputStream outToClient, StringTokenizer stringTokenizer) {
-		// if server doesn't get IAMV command - remove user from list
+	private void handle_DATA_Command(StringTokenizer stringTokenizer) {
+		
+		StringBuilder stringBuilder = new StringBuilder();
+
+		stringBuilder.append("DATA ");
+
+		//put in username in stringbuilder
+		String username = stringTokenizer.nextToken(":");
+
+		stringBuilder.append(username.substring(1) + ":");
+
+		while (stringTokenizer.hasMoreTokens()) {
+			stringBuilder.append(stringTokenizer.nextToken() + " ");
+		}
+
+		System.out.println(stringBuilder);
+
+		String messageBackToClient = new String(stringBuilder);
+
+		sendMsgToAll(messageBackToClient);
 	}
 
+	private void sendMsgToAll(String messageBackToClient) {
+		for (HashMap user : TCP_Server.users) {
+			Socket socket = (Socket) user.get("socket");
+
+			serverSendMessage(socket, messageBackToClient);
+		}
+	}
+
+	private void serverSendMessage(Socket socket, String messageBackToClient) {
+		try {
+			OutputStream outputStream = socket.getOutputStream();
+			byte[] dataToSend = messageBackToClient.getBytes();
+			outputStream.write(dataToSend);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String receiveMsgFromClient(InputStream inFromClient) {
+		try {
+			byte[] bytes = new byte[1024];
+
+			inFromClient.read(bytes);
+
+			return new String(bytes);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Could not read data from client...";
+	}
+
+//	private void handle_IAMV_Command(OutputStream outToClient, StringTokenizer stringTokenizer) {
+//		// if server doesn't get IAMV command - remove user from list
+//	}
+
 	private void handle_QUIT_command(OutputStream outToClient,
-	                                        InputStream inFromClient) {
+	                                 InputStream inFromClient) {
 		//delete user from active list
 
 		//close socket and streams
@@ -93,7 +140,8 @@ public class ServiceTheClient {
 		try {
 			String[] splitUsernameOnComma = stringTokenizer.nextToken().split(",");
 			String username = splitUsernameOnComma[0];
-			System.out.println(username);
+
+			//sends message back to client if username isn't valid.
 			if (!validateUsername(username)) {
 				String j_err_username_not_ok = "J_ERR 500: Username not OK. " +
 					"Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed." + CARRIAGE_RETURN_NEW_LINE;
@@ -102,9 +150,8 @@ public class ServiceTheClient {
 			} else {
 				String[] splitAddressOnColon = stringTokenizer.nextToken().split(":");
 				String server_ip = splitAddressOnColon[0];
-				System.out.println(server_ip);
+
 				String server_port = splitAddressOnColon[1];
-				System.out.println(server_port);
 
 				// save person<HashMap> to an arraylist with users.
 				HashMap<String, Object> user = new HashMap<>();
@@ -114,16 +161,31 @@ public class ServiceTheClient {
 				user.put("iamv", true);
 				user.put("socket", socket);
 
-				users.add(user);
+				// add user to user arraylist
+				TCP_Server.users.add(user);
 
 				//J_OK  Client is accepted
-				System.out.println("Client is accepted.");
+				System.out.println("Client is accepted. \n\n'" + username + "' joined the chat room");
 				String j_ok_command = "J_OK" + CARRIAGE_RETURN_NEW_LINE;
 				outToClient.write(j_ok_command.getBytes());
+
+				send_List_To_Other_Users();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void send_List_To_Other_Users() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("LIST");
+		for (HashMap user : TCP_Server.users) {
+			stringBuilder.append(" " + user.get("username"));
+		}
+		stringBuilder.append(CARRIAGE_RETURN_NEW_LINE);
+		String listOfUsers = new String(stringBuilder);
+
+		sendMsgToAll(listOfUsers);
 	}
 
 	private boolean validateUsername(String username) {
@@ -142,20 +204,8 @@ public class ServiceTheClient {
 		return inFromClient;
 	}
 
-	public void setInFromClient(InputStream inFromClient) {
-		this.inFromClient = inFromClient;
-	}
-
 	public OutputStream getOutToClient() {
 		return outToClient;
-	}
-
-	public void setOutToClient(OutputStream outToClient) {
-		this.outToClient = outToClient;
-	}
-
-	public ArrayList<HashMap<String, Object>> getUsers() {
-		return this.users;
 	}
 
 }
