@@ -41,13 +41,13 @@ public class ServiceTheClient {
 								outToClient.write(err_Message_Too_Long.getBytes());
 								break;
 							}
-							handle_DATA_Command(stringTokenizer);
+							handle_DATA_Command(stringTokenizer, username);
 							break;
 						case "IAMV":
 							//handle_IAMV_Command(outToClient, stringTokenizer);
 							break;
 						case "QUIT":
-							handle_QUIT_command(outToClient, inFromClient);
+							handle_QUIT_command(outToClient, inFromClient, username);
 							verbose = false;
 							break;
 					}

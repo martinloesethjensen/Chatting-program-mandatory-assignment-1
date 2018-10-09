@@ -57,6 +57,8 @@ public class TCP_Client {
 			inFromServer.read(bytes);
 			String responseFromServer = new String(bytes);
 
+			System.out.println(responseFromServer);
+
 			if (responseFromServer.trim().equals("J_OK")) { // trim because the byte array consists of many placeholders
 				System.out.println("OK to continue...");
 
