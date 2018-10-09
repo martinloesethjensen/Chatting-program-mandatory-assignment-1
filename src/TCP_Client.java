@@ -62,7 +62,7 @@ public class TCP_Client {
 
 				send_IAMV_Command(outToServer);
 
-				receiveFromServerThread(inFromServer);
+				receiveFromServerThread(socket);
 				sendToSeverThread(inputFromUser, outToServer, username);
 
 			} else {
@@ -77,29 +77,30 @@ public class TCP_Client {
 		}
 	}
 
-	private static void receiveFromServerThread(InputStream inFromServer) {
+	private static void receiveFromServerThread(Socket socket) {
 		Thread thread = new Thread(() -> {
-			try {
-				byte[] bytes = new byte[1024];
+			while (true) {
+				try {
+					InputStream inputStream = socket.getInputStream();
 
-				inFromServer.read(bytes);
+					byte[] bytes = new byte[1024];
 
-				String responseFromServer = new String(bytes);
-				System.out.println(responseFromServer);
-			} catch (IOException e) {
-				e.printStackTrace();
+					inputStream.read(bytes);
+
+					String responseFromServer = new String(bytes);
+					System.out.println(responseFromServer);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		thread.start();
 	}
 
 	private static void sendToSeverThread(Scanner inputFromUser, OutputStream outToServer, String username) {
-
 		Thread thread = new Thread(() -> {
-			while (true){
+			while (true) {
 				try {
-//				inputFromUser = new Scanner(System.in);
-
 					System.out.println("What do you want to send? ");
 					String userInput = inputFromUser.nextLine();
 

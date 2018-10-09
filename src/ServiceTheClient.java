@@ -26,8 +26,8 @@ public class ServiceTheClient {
 			outToClient = socket.getOutputStream();
 
 			while (verbose) {
-
-				StringTokenizer stringTokenizer = new StringTokenizer(receiveMsgFromClient(inFromClient));
+				String messageFromClient = receiveMsgFromClient(inFromClient).trim();
+				StringTokenizer stringTokenizer = new StringTokenizer(messageFromClient);
 				String command = stringTokenizer.nextToken();
 
 				if (validateCommand(command)) {
@@ -36,6 +36,11 @@ public class ServiceTheClient {
 							handle_JOIN_Command(outToClient, stringTokenizer, socket);
 							break;
 						case "DATA":
+							if(messageFromClient.length() > 250) {
+								String err_Message_Too_Long = "J_ERR 500: Message too long." + CARRIAGE_RETURN_NEW_LINE;
+								outToClient.write(err_Message_Too_Long.getBytes());
+								break;
+							}
 							handle_DATA_Command(stringTokenizer);
 							break;
 						case "IAMV":
