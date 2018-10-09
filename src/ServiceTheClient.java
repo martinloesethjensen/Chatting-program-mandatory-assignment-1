@@ -29,16 +29,19 @@ public class ServiceTheClient {
 				String messageFromClient = receiveMsgFromClient(inFromClient).trim();
 				StringTokenizer stringTokenizer = new StringTokenizer(messageFromClient);
 				String command = stringTokenizer.nextToken();
+				String username = stringTokenizer.nextToken(":");
+
+
 
 				if (validateCommand(command)) {
 					switch (command) {
 						case "JOIN":
-							handle_JOIN_Command(outToClient, stringTokenizer, socket);
+							handle_JOIN_Command(outToClient, stringTokenizer, socket, username);
 							break;
 						case "DATA":
-							if(messageFromClient.length() > 250) {
-								String err_Message_Too_Long = "J_ERR 500: Message too long." + CARRIAGE_RETURN_NEW_LINE;
-								outToClient.write(err_Message_Too_Long.getBytes());
+							//If message is over 250 characters send an J_ERR
+							if (messageFromClient.length() > (250 + command.length() + username.length())) {
+								serverSendMessage(socket, "J_ERR 500: Message too long." + CARRIAGE_RETURN_NEW_LINE);
 								break;
 							}
 							handle_DATA_Command(stringTokenizer, username);
@@ -52,14 +55,9 @@ public class ServiceTheClient {
 							break;
 					}
 
-
-					System.out.println();
-
-
 				} else {
 
-					String err_Unknown_Command = "J_ERR 500: UNKNOWN COMMAND." + CARRIAGE_RETURN_NEW_LINE;
-					outToClient.write(err_Unknown_Command.getBytes());
+					serverSendMessage(socket, "J_ERR 500: UNKNOWN COMMAND." + CARRIAGE_RETURN_NEW_LINE);
 
 				}
 
@@ -69,16 +67,12 @@ public class ServiceTheClient {
 		}
 	}
 
-	private void handle_DATA_Command(StringTokenizer stringTokenizer) {
-		
+	private void handle_DATA_Command(StringTokenizer stringTokenizer, String username) {
 		StringBuilder stringBuilder = new StringBuilder();
 
 		stringBuilder.append("DATA ");
 
-		//put in username in stringbuilder
-		String username = stringTokenizer.nextToken(":");
-
-		stringBuilder.append(username.substring(1) + ":");
+		stringBuilder.append(username + ": ");
 
 		while (stringTokenizer.hasMoreTokens()) {
 			stringBuilder.append(stringTokenizer.nextToken() + " ");
@@ -127,9 +121,18 @@ public class ServiceTheClient {
 //		// if server doesn't get IAMV command - remove user from list
 //	}
 
-	private void handle_QUIT_command(OutputStream outToClient,
-	                                 InputStream inFromClient) {
+	private void handle_QUIT_command(OutputStream outToClient, InputStream inFromClient, String username) {
 		//delete user from active list
+		for (HashMap user: TCP_Server.users) {
+			if (user.get("username").equals(username)) {
+				//send message to all that the person left the chat room
+				TCP_Server.users.remove(user);
+				System.out.println(TCP_Server.users);
+
+				sendMsgToAll("IN [SERVER]: [" + username + "] left the chat room.");
+				break;
+			}
+		}
 
 		//close socket and streams
 		System.out.println("Client is closing down and leaving the group.");
@@ -141,51 +144,59 @@ public class ServiceTheClient {
 		}
 	}
 
-	private void handle_JOIN_Command(OutputStream outToClient, StringTokenizer stringTokenizer, Socket socket) {
-		try {
-			String[] splitUsernameOnComma = stringTokenizer.nextToken().split(",");
-			String username = splitUsernameOnComma[0];
+	private void handle_JOIN_Command(OutputStream outToClient, StringTokenizer stringTokenizer, Socket socket, String username) {
+		String[] splitUsernameOnComma = username.split(",");
+		String usernameAlteredForJoinCommand = splitUsernameOnComma[0].substring(1);
+		System.out.println(usernameAlteredForJoinCommand);
 
-			//sends message back to client if username isn't valid.
-			if (!validateUsername(username)) {
-				String j_err_username_not_ok = "J_ERR 500: Username not OK. " +
-					"Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed." + CARRIAGE_RETURN_NEW_LINE;
-				outToClient.write(j_err_username_not_ok.getBytes());
-
-			} else {
-				String[] splitAddressOnColon = stringTokenizer.nextToken().split(":");
-				String server_ip = splitAddressOnColon[0];
-
-				String server_port = splitAddressOnColon[1];
-
-				// save person<HashMap> to an arraylist with users.
-				HashMap<String, Object> user = new HashMap<>();
-				user.put("username", username);
-				user.put("server_ip", server_ip);
-				user.put("server_port", server_port);
-				user.put("iamv", true);
-				user.put("socket", socket);
-
-				// add user to user arraylist
-				TCP_Server.users.add(user);
-
-				//J_OK  Client is accepted
-				System.out.println("Client is accepted. \n\n'" + username + "' joined the chat room");
-				String j_ok_command = "J_OK" + CARRIAGE_RETURN_NEW_LINE;
-				outToClient.write(j_ok_command.getBytes());
-
-				send_List_To_Other_Users();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		//sends message back to client if username isn't valid.
+		if (!validateUsername(usernameAlteredForJoinCommand)) {
+			serverSendMessage(socket, "J_ERR 500: Username not OK. " +
+				"Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed." + CARRIAGE_RETURN_NEW_LINE);
 		}
+		System.out.println(containUsername(usernameAlteredForJoinCommand));
+		if (containUsername(usernameAlteredForJoinCommand)) {
+			serverSendMessage(socket, "J_ER 500: Username already in use." + CARRIAGE_RETURN_NEW_LINE);
+		} else {
+
+			String[] splitAddressOnColon = stringTokenizer.nextToken().split(":");
+			String server_ip = splitUsernameOnComma[0];
+
+			String server_port = splitAddressOnColon[0];
+
+			// save person<HashMap> to an arraylist with users.
+			HashMap<String, Object> user = new HashMap<>();
+			user.put("username", usernameAlteredForJoinCommand);
+			user.put("server_ip", server_ip);
+			user.put("server_port", server_port);
+			user.put("iamv", true);
+			user.put("socket", socket);
+
+			// add user to arraylist of active users
+			TCP_Server.users.add(user);
+
+			//J_OK  Client is accepted
+			System.out.println("Client is accepted. \n\n[" + usernameAlteredForJoinCommand + "] joined the chat room");
+			serverSendMessage(socket, "J_OK" + CARRIAGE_RETURN_NEW_LINE);
+
+			send_List_To_Other_Users();
+		}
+	}
+
+	// iterate trough all the hashmaps in the arraylist and check if username all ready exists.
+	// if it does then send an error message back to client.
+	private boolean containUsername(String username) {
+		for (HashMap user : TCP_Server.users) {
+			if (user.get("username").equals(username)) return true;
+		}
+		return false;
 	}
 
 	private void send_List_To_Other_Users() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("LIST");
 		for (HashMap user : TCP_Server.users) {
-			stringBuilder.append(" " + user.get("username"));
+			stringBuilder.append(" [" + user.get("username") + "]");
 		}
 		stringBuilder.append(CARRIAGE_RETURN_NEW_LINE);
 		String listOfUsers = new String(stringBuilder);
@@ -197,20 +208,7 @@ public class ServiceTheClient {
 		return username.matches("^[a-zA-Z0-9_-]{1,12}$");
 	}
 
-	public boolean validateCommand(String command) {
+	private boolean validateCommand(String command) {
 		return command.equals("JOIN") || command.equals("DATA") || command.equals("IAMV") || command.equals("QUIT");
 	}
-
-	public String getCARRIAGE_RETURN_NEW_LINE() {
-		return CARRIAGE_RETURN_NEW_LINE;
-	}
-
-	public InputStream getInFromClient() {
-		return inFromClient;
-	}
-
-	public OutputStream getOutToClient() {
-		return outToClient;
-	}
-
 }
