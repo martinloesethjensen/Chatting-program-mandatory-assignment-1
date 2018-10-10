@@ -1,16 +1,16 @@
 # Chatting-program-mandatory-assignment-1
 
-Mandatory Assignment 1 - Chat system
+Mandatory Assignment 1 - a chat system
 
 For Software Construction 3 - 3rd Semester @ KEA
-------
+------------------------------------------------
 
 Dat17C hand in date:
 ====================
 
-This is one of the compulsory assignments you need to hand in, and pass, to qualify for 3rd semester exam.
+This is one of the compulsory assignments you need to hand in, and pass, to qualify for the 3rd-semester exam.
 
-Hand in date: 11October 2018, latest at 14:00, on Fronter.
+Hand in date: 11 October 2018, latest at 14:00, on Fronter.
 
 Hand in info: You must submit a link to your git repo.
 
@@ -19,11 +19,11 @@ Overview:
 
 You should code a Chat system, with a chat client that can connect to a chat server.
 
-You may need to use threads in client and/or in server. The client should at the start ask the user his/her chat-name(username) and then send a join message to the server.
+You may need to use threads in client and/or in the server. The client should at the start ask the user his/her chat-name(username) and then send a join message to the server.
 
-The server should accept clients to join the chat system, using a protocol specified below. When a client joins, the server should maintain and update a list of all active clients. The server will need to save for each client the user name, IP address and Port number.
+The server should accept clients to join the chat system, using a protocol specified below. When a client joins, the server should maintain and update a list of all active clients. The server will need to save for each client the username, IP address, and Port number.
 
-If a new user tries to join with the same name as an already active user, then an error message should be sent back to client. Client can try again with a new name.
+If a new user tries to join with the same name as an already active user, then an error message should be sent back to the client. The client can try again with a new name.
 
 An active client can send user text message to the server that will just send a copy to all active clients in the client list.
 
@@ -44,21 +44,21 @@ JOIN <<user_name>>, <<server_ip>>:<<server_port>>
 
 From client to server.
 
-The user name is given by the user. Username is max 12 chars long, only letters, digits, '-' and '_' allowed.
+The username is given by the user. Username is maxed at 12 chars long, only letters, digits, '-' and '_' allowed.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
 J_OK
 
-From server to client.
+From server to a client.
 
-Client is accepted.
+The client is accepted.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
 J_ER <<err_code>>: <<err_msg>>
 
-From server to client.
+From server to a client.
 
 Client not accepted. Duplicate username, unknown command, bad command or any other errors.
 
@@ -70,7 +70,7 @@ From client to server.
 
 From server to all clients.
 
-First part of message indicates from which user it is, the colon(:) indicates where the user message begins. Max 250 user characters.
+The first part of a message indicates from which user it is, the colon(:) indicates where the user message begins. Max 250 user characters.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ IMAV
 
 From client to server.
 
-Client sends this heartbeat alive every 1 minute.
+The client sends this heartbeat alive every 1 minute.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
@@ -86,15 +86,15 @@ QUIT
 
 From client to server.
 
-Client is closing down and leaving the group.
+The client is closing down and leaving the group.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
 LIST <<name1 name2 name3 ...>>
 
-From server to client.
+From server to a client.
 
-A list of all active user names is sent to all clients, each time the list at the server changes.
+A list of all active usernames is sent to all clients, each time the list at the server changes.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
