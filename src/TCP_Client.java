@@ -113,6 +113,7 @@ public class TCP_Client {
 
 						System.out.println("Logging of...");
 						verbose = false;
+						System.exit(0);
 						break;
 					} else {
 

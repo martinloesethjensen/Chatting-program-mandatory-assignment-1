@@ -29,17 +29,22 @@ public class ServiceTheClient {
 				String messageFromClient = receiveMsgFromClient(inFromClient).trim();
 				StringTokenizer stringTokenizer = new StringTokenizer(messageFromClient);
 				String command = stringTokenizer.nextToken();
-				String username = stringTokenizer.nextToken(":");
+//				String username = stringTokenizer.nextToken(":");
 
+				//Fix issue with command and username regarding one token commands like IAMV
 
-
+				System.out.println(command);
+				String username;
+				control_IAMV_Command_On_Active_Users();
 				if (validateCommand(command)) {
 					switch (command) {
 						case "JOIN":
+							username = stringTokenizer.nextToken(":");
 							handle_JOIN_Command(outToClient, stringTokenizer, socket, username);
 							break;
 						case "DATA":
 							//If message is over 250 characters send an J_ERR
+							username = stringTokenizer.nextToken(":");
 							if (messageFromClient.length() > (250 + command.length() + username.length())) {
 								serverSendMessage(socket, "J_ERR 500: Message too long." + CARRIAGE_RETURN_NEW_LINE);
 								break;
@@ -47,10 +52,10 @@ public class ServiceTheClient {
 							handle_DATA_Command(stringTokenizer, username);
 							break;
 						case "IAMV":
-							//handle_IAMV_Command(outToClient, stringTokenizer);
+							handle_IAMV_Command(socket);
 							break;
 						case "QUIT":
-							handle_QUIT_command(outToClient, inFromClient, username);
+							handle_QUIT_command(outToClient, inFromClient, socket);
 							verbose = false;
 							break;
 					}
@@ -65,6 +70,33 @@ public class ServiceTheClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void control_IAMV_Command_On_Active_Users() {
+		Thread thread = new Thread(() -> {
+			while (true) {
+				try {
+					Thread.sleep(61100);
+					for (HashMap user : TCP_Server.users) {
+						System.out.println(user);
+						System.out.println(user.get("iamv"));
+						if ((boolean) user.get("iamv")) {
+							String username = (String) user.get("username");
+							//send message to all that the person left the chat room
+							TCP_Server.users.remove(user);
+							System.out.println(TCP_Server.users);
+
+							sendMsgToAll("IN [SERVER]: [" + username + "] was kicked out of the chat room.");
+							break;
+						}
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		thread.start();
+
 	}
 
 	private void handle_DATA_Command(StringTokenizer stringTokenizer, String username) {
@@ -117,25 +149,29 @@ public class ServiceTheClient {
 		return "Could not read data from client...";
 	}
 
-//	private void handle_IAMV_Command(OutputStream outToClient, StringTokenizer stringTokenizer) {
-//		// if server doesn't get IAMV command - remove user from list
-//	}
-
-	private void handle_QUIT_command(OutputStream outToClient, InputStream inFromClient, String username) {
-		//delete user from active list
+	private void handle_IAMV_Command(Socket socket) {
 		for (HashMap user: TCP_Server.users) {
-			if (user.get("username").equals(username)) {
+			if(user.get("socket") == socket){
+				user.put("iamv", true);
+				System.out.println("Fundet socket: " + user.get("socket"));
+				System.out.println("Socket vi arbejder med: "+ socket);
+				//
+			}
+		}
+	}
+
+	private void handle_QUIT_command(OutputStream outToClient, InputStream inFromClient, Socket socket) {
+		//delete user from active list
+		for (HashMap user : TCP_Server.users) {
+			if (user.get("socket").equals(socket)) {
 				//send message to all that the person left the chat room
 				TCP_Server.users.remove(user);
-				System.out.println(TCP_Server.users);
 
-				sendMsgToAll("IN [SERVER]: [" + username + "] left the chat room.");
+				sendMsgToAll("IN [SERVER]: [" + user.get("username") + "] left the chat room.");
 				break;
 			}
 		}
 
-		//close socket and streams
-		System.out.println("Client is closing down and leaving the group.");
 		try {
 			outToClient.close();
 			inFromClient.close();
@@ -147,20 +183,18 @@ public class ServiceTheClient {
 	private void handle_JOIN_Command(OutputStream outToClient, StringTokenizer stringTokenizer, Socket socket, String username) {
 		String[] splitUsernameOnComma = username.split(",");
 		String usernameAlteredForJoinCommand = splitUsernameOnComma[0].substring(1);
-		System.out.println(usernameAlteredForJoinCommand);
 
 		//sends message back to client if username isn't valid.
 		if (!validateUsername(usernameAlteredForJoinCommand)) {
 			serverSendMessage(socket, "J_ERR 500: Username not OK. " +
 				"Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed." + CARRIAGE_RETURN_NEW_LINE);
 		}
-		System.out.println(containUsername(usernameAlteredForJoinCommand));
 		if (containUsername(usernameAlteredForJoinCommand)) {
 			serverSendMessage(socket, "J_ER 500: Username already in use." + CARRIAGE_RETURN_NEW_LINE);
 		} else {
 
 			String[] splitAddressOnColon = stringTokenizer.nextToken().split(":");
-			String server_ip = splitUsernameOnComma[0];
+			String server_ip = splitUsernameOnComma[1];
 
 			String server_port = splitAddressOnColon[0];
 
