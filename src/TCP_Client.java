@@ -1,10 +1,8 @@
 import java.io.*;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-import java.util.StringTokenizer;
 
 public class TCP_Client {
 	static final String CARRIAGE_RETURN_NEW_LINE = "\r\n";
@@ -16,11 +14,11 @@ public class TCP_Client {
 		Scanner inputFromUser = new Scanner(System.in);
 		System.out.print("What is the IP for the server (type 0 for localhost): ");
 		//String ipToConnect = args.length >= 1 ? args[0] : inputFromUser.nextLine();
-		String ipToConnect = "0";
+		String ipToConnect = "172.16.20.144";
 
 		System.out.print("What is the PORT for the server: ");
 		//int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : inputFromUser.nextInt();
-		int portToConnect = 5656;
+		int portToConnect = 4545;
 
 
 		final int PORT_SERVER = portToConnect;
@@ -62,7 +60,7 @@ public class TCP_Client {
 			if (responseFromServer.trim().equals("J_OK")) { // trim because the byte array consists of many placeholders
 				System.out.println("OK to continue...");
 
-				send_IAMV_Command(outToServer);
+				send_IMAV_Command(outToServer);
 
 				receiveFromServerThread(socket);
 				sendToSeverThread(inputFromUser, outToServer, username);
@@ -130,14 +128,14 @@ public class TCP_Client {
 		thread.start();
 	}
 
-	private static void send_IAMV_Command(OutputStream outToServer) {
+	private static void send_IMAV_Command(OutputStream outToServer) {
 		Thread thread = new Thread(() -> {
 			while (true) {
 				if (!verbose) break;
 				try {
 					Thread.sleep(60000);
-					String IAMV = "IAMV";
-					outToServer.write(IAMV.getBytes());
+					String IMAV = "IMAV";
+					outToServer.write(IMAV.getBytes());
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} catch (IOException e) {

@@ -35,7 +35,7 @@ public class ServiceTheClient {
 
 				System.out.println(command);
 				String username;
-				control_IAMV_Command_On_Active_Users();
+				control_IMAV_Command_On_Active_Users();
 				if (validateCommand(command)) {
 					switch (command) {
 						case "JOIN":
@@ -51,8 +51,8 @@ public class ServiceTheClient {
 							}
 							handle_DATA_Command(stringTokenizer, username);
 							break;
-						case "IAMV":
-							handle_IAMV_Command(socket);
+						case "IMAV":
+							handle_IMAV_Command(socket);
 							break;
 						case "QUIT":
 							handle_QUIT_command(outToClient, inFromClient, socket);
@@ -72,15 +72,15 @@ public class ServiceTheClient {
 		}
 	}
 
-	private void control_IAMV_Command_On_Active_Users() {
+	private void control_IMAV_Command_On_Active_Users() {
 		Thread thread = new Thread(() -> {
 			while (true) {
 				try {
 					Thread.sleep(61100);
 					for (HashMap user : TCP_Server.users) {
 						System.out.println(user);
-						System.out.println(user.get("iamv"));
-						if ((boolean) user.get("iamv")) {
+						System.out.println(user.get("imav"));
+						if ((boolean) user.get("imav")) {
 							String username = (String) user.get("username");
 							//send message to all that the person left the chat room
 							TCP_Server.users.remove(user);
@@ -149,10 +149,10 @@ public class ServiceTheClient {
 		return "Could not read data from client...";
 	}
 
-	private void handle_IAMV_Command(Socket socket) {
+	private void handle_IMAV_Command(Socket socket) {
 		for (HashMap user: TCP_Server.users) {
 			if(user.get("socket") == socket){
-				user.put("iamv", true);
+				user.put("imav", true);
 				System.out.println("Fundet socket: " + user.get("socket"));
 				System.out.println("Socket vi arbejder med: "+ socket);
 				//
@@ -203,7 +203,7 @@ public class ServiceTheClient {
 			user.put("username", usernameAlteredForJoinCommand);
 			user.put("server_ip", server_ip);
 			user.put("server_port", server_port);
-			user.put("iamv", true);
+			user.put("imav", true);
 			user.put("socket", socket);
 
 			// add user to arraylist of active users
@@ -243,6 +243,6 @@ public class ServiceTheClient {
 	}
 
 	private boolean validateCommand(String command) {
-		return command.equals("JOIN") || command.equals("DATA") || command.equals("IAMV") || command.equals("QUIT");
+		return command.equals("JOIN") || command.equals("DATA") || command.equals("IMAV") || command.equals("QUIT");
 	}
 }
