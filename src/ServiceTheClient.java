@@ -10,9 +10,11 @@ public class ServiceTheClient {
 	private InputStream inFromClient;
 	private OutputStream outToClient;
 
-	public ServiceTheClient() {
-	}
+	public ServiceTheClient() {}
 
+	/*
+	Handle all the logic
+	 */
 	public void serviceTheClient(Socket socket) {
 		boolean verbose = true;
 		try {
@@ -21,7 +23,6 @@ public class ServiceTheClient {
 			System.out.println("IP: " + clientIp);
 			System.out.println("PORT: " + socket.getPort());
 
-
 			inFromClient = socket.getInputStream();
 			outToClient = socket.getOutputStream();
 
@@ -29,13 +30,9 @@ public class ServiceTheClient {
 				String messageFromClient = receiveMsgFromClient(inFromClient).trim();
 				StringTokenizer stringTokenizer = new StringTokenizer(messageFromClient);
 				String command = stringTokenizer.nextToken();
-//				String username = stringTokenizer.nextToken(":");
 
-				//Fix issue with command and username regarding one token commands like IAMV
-
-				System.out.println(command);
 				String username;
-				control_IMAV_Command_On_Active_Users();
+//				control_IMAV_Command_On_Active_Clients();
 				if (validateCommand(command)) {
 					switch (command) {
 						case "JOIN":
@@ -43,16 +40,20 @@ public class ServiceTheClient {
 							handle_JOIN_Command(outToClient, stringTokenizer, socket, username);
 							break;
 						case "DATA":
-							//If message is over 250 characters send an J_ERR
+							//If message is over 250 characters send an J_ER
 							username = stringTokenizer.nextToken(":");
+							if (!checkUsernameForSocket(username, socket)) {
+								serverSendMessage(socket, "J_ER 500: Not your username." + CARRIAGE_RETURN_NEW_LINE);
+								break;
+							}
 							if (messageFromClient.length() > (250 + command.length() + username.length())) {
-								serverSendMessage(socket, "J_ERR 500: Message too long." + CARRIAGE_RETURN_NEW_LINE);
+								serverSendMessage(socket, "J_ER 500: Message too long." + CARRIAGE_RETURN_NEW_LINE);
 								break;
 							}
 							handle_DATA_Command(stringTokenizer, username);
 							break;
 						case "IMAV":
-							handle_IMAV_Command(socket);
+//							handle_IMAV_Command(socket);
 							break;
 						case "QUIT":
 							handle_QUIT_command(outToClient, inFromClient, socket);
@@ -60,9 +61,11 @@ public class ServiceTheClient {
 							break;
 					}
 
+//					delete_Clients_not_alive();
+
 				} else {
 
-					serverSendMessage(socket, "J_ERR 500: UNKNOWN COMMAND." + CARRIAGE_RETURN_NEW_LINE);
+					serverSendMessage(socket, "J_ER 500: UNKNOWN COMMAND." + CARRIAGE_RETURN_NEW_LINE);
 
 				}
 
@@ -72,39 +75,29 @@ public class ServiceTheClient {
 		}
 	}
 
-	private void control_IMAV_Command_On_Active_Users() {
-		Thread thread = new Thread(() -> {
-			while (true) {
-				try {
-					Thread.sleep(61100);
-					for (HashMap user : TCP_Server.users) {
-						System.out.println(user);
-						System.out.println(user.get("imav"));
-						if ((boolean) user.get("imav")) {
-							String username = (String) user.get("username");
-							//send message to all that the person left the chat room
-							TCP_Server.users.remove(user);
-							System.out.println(TCP_Server.users);
-
-							sendMsgToAll("IN [SERVER]: [" + username + "] was kicked out of the chat room.");
-							break;
-						}
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+	/*
+	Method that checks if the username is the same as the client initially started with.
+	So he can't trick the server by writing: "DATA ->not_initial_username<-: text he want to send"
+	 */
+	private boolean checkUsernameForSocket(String username, Socket socket) {
+		for (HashMap client : TCP_Server.clients) {
+			if (client.get("username").equals(username.substring(1))) {
+				return true;
 			}
-		});
-		thread.start();
-
+		}
+		return false;
 	}
 
+	/*
+	Builds a string according to the protocol.
+	Then sends to all clients.
+	 */
 	private void handle_DATA_Command(StringTokenizer stringTokenizer, String username) {
 		StringBuilder stringBuilder = new StringBuilder();
 
 		stringBuilder.append("DATA ");
 
-		stringBuilder.append(username + ": ");
+		stringBuilder.append(username.substring(1) + ": ");
 
 		while (stringTokenizer.hasMoreTokens()) {
 			stringBuilder.append(stringTokenizer.nextToken() + " ");
@@ -117,24 +110,32 @@ public class ServiceTheClient {
 		sendMsgToAll(messageBackToClient);
 	}
 
+	/*
+	Iterates through every client in the list.
+	For each client it creates a new socket and set it as the clients socket.
+	 */
 	private void sendMsgToAll(String messageBackToClient) {
-		for (HashMap user : TCP_Server.users) {
-			Socket socket = (Socket) user.get("socket");
-
+		for (HashMap client : TCP_Server.clients) {
+			Socket socket = (Socket) client.get("socket");
 			serverSendMessage(socket, messageBackToClient);
 		}
 	}
 
+	/*
+	Create a outputstream for the socket. The string from the parameter is being generated as a byte[]
+	 */
 	private void serverSendMessage(Socket socket, String messageBackToClient) {
 		try {
-			OutputStream outputStream = socket.getOutputStream();
-			byte[] dataToSend = messageBackToClient.getBytes();
-			outputStream.write(dataToSend);
+			//OutputStream outputStream = socket.getOutputStream();
+			socket.getOutputStream().write(messageBackToClient.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	/*
+	Receives the message from the client.
+	 */
 	private String receiveMsgFromClient(InputStream inFromClient) {
 		try {
 			byte[] bytes = new byte[1024];
@@ -149,44 +150,34 @@ public class ServiceTheClient {
 		return "Could not read data from client...";
 	}
 
-	private void handle_IMAV_Command(Socket socket) {
-		for (HashMap user: TCP_Server.users) {
-			if(user.get("socket") == socket){
-				user.put("imav", true);
-				System.out.println("Fundet socket: " + user.get("socket"));
-				System.out.println("Socket vi arbejder med: "+ socket);
-				//
-			}
-		}
-	}
-
+	/*
+	Iterates through the list to find the client that wants to quit and removes the client from the list.
+	 */
 	private void handle_QUIT_command(OutputStream outToClient, InputStream inFromClient, Socket socket) {
-		//delete user from active list
-		for (HashMap user : TCP_Server.users) {
-			if (user.get("socket").equals(socket)) {
+		//delete client from active list
+		for (HashMap client : TCP_Server.clients) {
+			if (client.get("socket").equals(socket)) {
 				//send message to all that the person left the chat room
-				TCP_Server.users.remove(user);
+				TCP_Server.clients.remove(client);
 
-				sendMsgToAll("IN [SERVER]: [" + user.get("username") + "] left the chat room.");
+				sendMsgToAll("IN [SERVER]: [" + client.get("username") + "] left the chat room.");
 				break;
 			}
 		}
-
-		try {
-			outToClient.close();
-			inFromClient.close();
-		} catch (IOException e) {
-			System.err.println("Error closing socket and streams : " + e.getMessage());
-		}
 	}
 
+	/*
+	Method checks if the username is valid.
+	The it splits the JOIN message the client sent and saves client in an list.
+	When the client is saved, a list of all active clients is sent out to all clients.
+	 */
 	private void handle_JOIN_Command(OutputStream outToClient, StringTokenizer stringTokenizer, Socket socket, String username) {
 		String[] splitUsernameOnComma = username.split(",");
 		String usernameAlteredForJoinCommand = splitUsernameOnComma[0].substring(1);
 
 		//sends message back to client if username isn't valid.
 		if (!validateUsername(usernameAlteredForJoinCommand)) {
-			serverSendMessage(socket, "J_ERR 500: Username not OK. " +
+			serverSendMessage(socket, "J_ER 500: Username not OK. " +
 				"Username may only be max 12 chars long, only letters, digits, ‘-‘ and ‘_’ allowed." + CARRIAGE_RETURN_NEW_LINE);
 		}
 		if (containUsername(usernameAlteredForJoinCommand)) {
@@ -198,51 +189,107 @@ public class ServiceTheClient {
 
 			String server_port = splitAddressOnColon[0];
 
-			// save person<HashMap> to an arraylist with users.
-			HashMap<String, Object> user = new HashMap<>();
-			user.put("username", usernameAlteredForJoinCommand);
-			user.put("server_ip", server_ip);
-			user.put("server_port", server_port);
-			user.put("imav", true);
-			user.put("socket", socket);
+			// save person<HashMap> to an arraylist with clients.
+			HashMap<String, Object> client = new HashMap<>();
+			client.put("username", usernameAlteredForJoinCommand);
+			client.put("server_ip", server_ip);
+			client.put("server_port", server_port);
+			client.put("imav", true);
+			client.put("socket", socket);
 
-			// add user to arraylist of active users
-			TCP_Server.users.add(user);
+			// add client to arraylist of active clients
+			TCP_Server.clients.add(client);
 
 			//J_OK  Client is accepted
-			System.out.println("Client is accepted. \n\n[" + usernameAlteredForJoinCommand + "] joined the chat room");
+			System.out.println("\n[" + usernameAlteredForJoinCommand + "] joined the chat room");
 			serverSendMessage(socket, "J_OK" + CARRIAGE_RETURN_NEW_LINE);
 
-			send_List_To_Other_Users();
+			send_List_To_Other_Clients();
 		}
 	}
 
-	// iterate trough all the hashmaps in the arraylist and check if username all ready exists.
-	// if it does then send an error message back to client.
+	/*
+	Iterate trough all the hashmaps in the arraylist and check if username all ready exists.
+	If it does then send an error message back to client.
+	 */
 	private boolean containUsername(String username) {
-		for (HashMap user : TCP_Server.users) {
-			if (user.get("username").equals(username)) return true;
+		for (HashMap client : TCP_Server.clients) {
+			if (client.get("username").equals(username)) return true;
 		}
 		return false;
 	}
 
-	private void send_List_To_Other_Users() {
+	/*
+	Concatenate all usernames to a string - then send list to all clients.
+	 */
+	private void send_List_To_Other_Clients() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("LIST");
-		for (HashMap user : TCP_Server.users) {
-			stringBuilder.append(" [" + user.get("username") + "]");
+		for (HashMap client : TCP_Server.clients) {
+			stringBuilder.append(" [" + client.get("username") + "]");
 		}
 		stringBuilder.append(CARRIAGE_RETURN_NEW_LINE);
-		String listOfUsers = new String(stringBuilder);
+		String listOfClients = new String(stringBuilder);
 
-		sendMsgToAll(listOfUsers);
+		sendMsgToAll(listOfClients);
 	}
 
+	/*
+	Validates username.
+	 */
 	private boolean validateUsername(String username) {
 		return username.matches("^[a-zA-Z0-9_-]{1,12}$");
 	}
 
+	/*
+	Validates command
+	 */
 	private boolean validateCommand(String command) {
 		return command.equals("JOIN") || command.equals("DATA") || command.equals("IMAV") || command.equals("QUIT");
 	}
+
+	/*
+	For IMAV command.
+	 */
+//	private void handle_IMAV_Command(Socket socket) {
+//		for (HashMap client : TCP_Server.clients) {
+//			if (client.get("socket") == socket) {
+//				client.put("imav", true);
+//			}
+//		}
+//	}
+//
+//		private void control_IMAV_Command_On_Active_Clients() {
+//		Thread thread = new Thread(() -> {
+//			while (true) {
+//				try {
+//					Thread.sleep(55000);
+//					for (HashMap client : TCP_Server.clients) {
+//						System.out.println(client);
+//						System.out.println(client.get("imav"));
+//
+//						client.put("imav", false);
+//					}
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//		thread.start();
+//	}
+//
+//	private void delete_Clients_not_alive() {
+//		for (HashMap client : TCP_Server.clients) {
+//			if (!(boolean) client.get("imav")) {
+//				TCP_Server.clients.remove(client);
+//
+//				String username = (String) client.get("username");
+//				//send message to all that the person left the chat room
+//
+//				sendMsgToAll("IN [SERVER]: [" + username + "] was kicked out of the chat room.");
+//				break;
+//			}
+//		}
+//		System.out.println(TCP_Server.clients);
+//	}
 }

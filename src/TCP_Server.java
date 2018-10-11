@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TCP_Server {
-	public static ArrayList<HashMap<String, Object>> users = new ArrayList<>();
+	public static ArrayList<HashMap<String, Object>> clients = new ArrayList<>();
 
 	public static void main(String[] args) {
 		System.out.println("=========SERVER=========");
@@ -17,26 +17,23 @@ public class TCP_Server {
 
 			System.out.println("Starting server...\n");
 
-
 			while (true) {
 				Socket socket;
 				socket = server.accept();
 				System.out.println("Client connected");
 
+				/*
+				Creates a new thread for every client.
+				 */
 				ServiceTheClient client = new ServiceTheClient();
 
 				Thread thread = new Thread(() ->
 					client.serviceTheClient(socket)
 				);
 				thread.start();
-
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-
-
 }

@@ -4,7 +4,7 @@
     <list default="true" id="6e625272-09ad-41ba-8396-1e4d3bfaad09" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ServiceTheClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ServiceTheClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/TCP_Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TCP_Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TCP_Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/TCP_Server.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -47,16 +47,16 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="8450" />
-          <entry key="txt" value="257" />
+          <entry key="java" value="10741" />
+          <entry key="txt" value="345" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.spring.boot.run.usages" />
       <usages-collector id="statistics.spring.boot.mvc.usages" />
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="8450" />
-          <entry key="PLAIN_TEXT" value="257" />
+          <entry key="JAVA" value="10741" />
+          <entry key="PLAIN_TEXT" value="345" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -64,11 +64,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TCP_Client.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1110">
-              <caret line="130" column="30" selection-start-line="130" selection-start-column="30" selection-end-line="130" selection-end-column="30" />
+            <state relative-caret-position="2397">
+              <caret line="145" column="46" selection-start-line="145" selection-start-column="46" selection-end-line="145" selection-end-column="46" />
             </state>
           </provider>
         </entry>
@@ -76,8 +76,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TCP_Server.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
-              <caret line="30" column="23" selection-start-line="30" selection-start-column="23" selection-end-line="30" selection-end-column="23" />
+            <state relative-caret-position="119">
+              <caret line="7" column="58" selection-start-line="7" selection-start-column="58" selection-end-line="7" selection-end-column="58" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -85,13 +85,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/ServiceTheClient.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="89">
-              <caret line="154" column="22" selection-start-line="154" selection-start-column="22" selection-end-line="154" selection-end-column="22" />
+            <state relative-caret-position="459">
+              <caret line="251" column="19" selection-start-line="251" selection-start-column="19" selection-end-line="251" selection-end-column="19" />
               <folding>
-                <element signature="imports" expanded="true" />
+                <element signature="e#7380#7381#0" expanded="true" />
+                <element signature="e#7435#7436#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -106,15 +107,36 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>J_ERR</find>
+      <find>delete</find>
+      <find>control</find>
+      <find>handle_IMA</find>
+      <find>users</find>
+      <find>user</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>J_ER</replace>
+      <replace>clients</replace>
+      <replace>Clients</replace>
+      <replace>client</replace>
+    </replaceStrings>
+  </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Valhalla &lt;martinfloorball1997@gmail.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/src/TCP_Client.java" />
         <option value="$PROJECT_DIR$/src/TCP_Server.java" />
         <option value="$PROJECT_DIR$/src/ServiceTheClient.java" />
-        <option value="$PROJECT_DIR$/src/TCP_Client.java" />
       </list>
     </option>
   </component>
@@ -140,7 +162,7 @@
     <property name="SearchEverywhereHistoryKey" value="IAMV&#9;PSI&#9;JAVA://com.sun.tools.javac.resources.CompilerProperties.Errors#InvalidRepeatableAnnotationMultipleValues&#10;iamv&#9;PSI&#9;JAVA://ServiceTheClient#control_IAMV_Command_On_Active_Users&#10;handle_IAM&#9;PSI&#9;JAVA://ServiceTheClient#handle_IAMV_Command" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1539174471729" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1539261734950" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -207,7 +229,7 @@
       <workItem from="1539169383635" duration="5346000" />
       <workItem from="1539174771397" duration="1011000" />
       <workItem from="1539239393415" duration="1241000" />
-      <workItem from="1539247397655" duration="1504000" />
+      <workItem from="1539247397655" duration="13449000" />
     </task>
     <task id="LOCAL-00001" summary="- Server now checks if username already exists in array of active users. &#10;- When user quit they will be removed from active list.">
       <created>1539113922942</created>
@@ -230,11 +252,18 @@
       <option name="project" value="LOCAL" />
       <updated>1539175790753</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Reformatted the code and cleaned it in the Client class.">
+      <created>1539261673843</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1539261673843</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="60479000" />
+    <option name="totallyTimeSpent" value="72424000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -258,7 +287,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32991204" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.31231672" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.31231672" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39822024" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -266,9 +295,9 @@
       <window_info anchor="bottom" id="CipherTools" order="7" weight="0.32991204" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32844576" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Terminal" order="10" weight="0.21690768" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.21554253" />
       <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
-      <window_info anchor="bottom" id="Messages" order="12" weight="0.32925472" />
+      <window_info anchor="bottom" id="Messages" order="12" weight="0.32844576" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.24966443" />
@@ -291,7 +320,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="- Server now checks if username already exists in array of active users. &#10;- When user quit they will be removed from active list." />
     <MESSAGE value="Fixed saving the informations of the client" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed saving the informations of the client" />
+    <MESSAGE value="Reformatted the code and cleaned it in the Client class." />
+    <option name="LAST_COMMIT_MESSAGE" value="Reformatted the code and cleaned it in the Client class." />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/../../1. Semester/Java/3.Semester/src/Manda1/Client.java">
@@ -324,26 +354,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TCP_Server.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="30" column="23" selection-start-line="30" selection-start-column="23" selection-end-line="30" selection-end-column="23" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ServiceTheClient.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="89">
-          <caret line="154" column="22" selection-start-line="154" selection-start-column="22" selection-end-line="154" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk-10.0.2/lib/src.zip!/jdk.compiler/com/sun/tools/javac/resources/CompilerProperties.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="148">
@@ -353,8 +363,29 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TCP_Client.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1110">
-          <caret line="130" column="30" selection-start-line="130" selection-start-column="30" selection-end-line="130" selection-end-column="30" />
+        <state relative-caret-position="2397">
+          <caret line="145" column="46" selection-start-line="145" selection-start-column="46" selection-end-line="145" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TCP_Server.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="58" selection-start-line="7" selection-start-column="58" selection-end-line="7" selection-end-column="58" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ServiceTheClient.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="251" column="19" selection-start-line="251" selection-start-column="19" selection-end-line="251" selection-end-column="19" />
+          <folding>
+            <element signature="e#7380#7381#0" expanded="true" />
+            <element signature="e#7435#7436#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
