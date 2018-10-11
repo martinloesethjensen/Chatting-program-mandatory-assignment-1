@@ -14,11 +14,11 @@ public class TCP_Client {
 		Scanner inputFromUser = new Scanner(System.in);
 		System.out.print("What is the IP for the server (type 0 for localhost): ");
 		//String ipToConnect = args.length >= 1 ? args[0] : inputFromUser.nextLine();
-		String ipToConnect = "172.16.20.144";
+		String ipToConnect = "0";
 
 		System.out.print("What is the PORT for the server: ");
 		//int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : inputFromUser.nextInt();
-		int portToConnect = 4545;
+		int portToConnect = 5656;
 
 
 		final int PORT_SERVER = portToConnect;
@@ -39,6 +39,7 @@ public class TCP_Client {
 			Scanner usernameInput = new Scanner(System.in);
 
 			String username;
+
 			//Server will validate username
 			System.out.print("Please enter a username: ");
 			username = usernameInput.next();
@@ -60,14 +61,15 @@ public class TCP_Client {
 			if (responseFromServer.trim().equals("J_OK")) { // trim because the byte array consists of many placeholders
 				System.out.println("OK to continue...");
 
+				/*
+				Threads that sends and receive data to and from the server.
+				 */
 				send_IMAV_Command(outToServer);
-
 				receiveFromServerThread(socket);
-				sendToSeverThread(inputFromUser, outToServer, username);
+				sendMessageToServerThread(inputFromUser, outToServer, username);
 
 			} else {
 				main(args);
-
 			}
 
 		} catch (UnknownHostException e) {
@@ -77,6 +79,9 @@ public class TCP_Client {
 		}
 	}
 
+	/*
+	Creates a thread that handles receiving input from the server.
+	 */
 	private static void receiveFromServerThread(Socket socket) {
 		Thread thread = new Thread(() -> {
 			while (true) {
@@ -97,54 +102,56 @@ public class TCP_Client {
 		thread.start();
 	}
 
-	private static void sendToSeverThread(Scanner inputFromUser, OutputStream outToServer, String username) {
+	/*
+	Creates a thread that handles messages being sent to the server.
+	 */
+	private static void sendMessageToServerThread(Scanner inputFromUser, OutputStream outToServer, String username) {
 		Thread thread = new Thread(() -> {
 			while (true) {
-				try {
-					System.out.println("What do you want to send? ");
-					String userInput = inputFromUser.nextLine();
+				System.out.println("What do you want to send? ");
+				String userInput = inputFromUser.nextLine();
 
-					if (userInput.equals("QUIT")) {
-						String quit_command = "QUIT" + CARRIAGE_RETURN_NEW_LINE;
+				if (userInput.equals("QUIT")) {
+					sendMessageToServer(outToServer, "QUIT" + CARRIAGE_RETURN_NEW_LINE);
 
-						outToServer.write(quit_command.getBytes());
-
-						System.out.println("Logging of...");
-						verbose = false;
-						System.exit(0);
-						break;
-					} else {
-
-						//check with how many characters the message contains
-						String msgToSend = "DATA " + username + ": " + userInput + CARRIAGE_RETURN_NEW_LINE;
-
-						outToServer.write(msgToSend.getBytes());
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+					System.out.println("Logging of...");
+					verbose = false;
+					System.exit(0);
+					break;
+				} else {
+					sendMessageToServer(outToServer, "DATA " + username + ": " + userInput + CARRIAGE_RETURN_NEW_LINE);
 				}
 			}
 		});
 		thread.start();
 	}
 
+	/*
+	Sends a message to the server.
+	 */
+	private static void sendMessageToServer(OutputStream outToServer, String message) {
+		try {
+			outToServer.write(message.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	Creates a Thread that sends a message every 60 seconds to the server
+	 */
 	private static void send_IMAV_Command(OutputStream outToServer) {
 		Thread thread = new Thread(() -> {
 			while (true) {
-				if (!verbose) break;
+				if (!verbose) break; // if client QUIT
 				try {
 					Thread.sleep(60000);
-					String IMAV = "IMAV";
-					outToServer.write(IMAV.getBytes());
+					sendMessageToServer(outToServer, "IMAV" + CARRIAGE_RETURN_NEW_LINE);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-				} catch (IOException e) {
-					System.err.println(e.getMessage());
 				}
 			}
 		});
 		thread.start();
 	}
-
-
 }
