@@ -19,7 +19,7 @@ public class TCP_Server {
 
 			while (true) {
 				Socket socket;
-				socket = server.accept();
+				socket = server.accept(); // Waits for a client to connect
 				System.out.println("Client connected");
 
 				/*
